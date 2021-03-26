@@ -55,3 +55,5 @@ export class Vec3{
         return this.devide(this.length);
     }
 }
+export type Point3=Vec3;//类型
+export const Point3=Vec3;//构造函数

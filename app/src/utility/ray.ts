@@ -1,6 +1,4 @@
-import {Vec3} from "./vec3"
-type Point3=Vec3;//类型
-const Point3=Vec3;//构造函数
+import {Vec3,Point3} from "./vec3"
 export class Ray{
     orig:Point3
     dir:Vec3
