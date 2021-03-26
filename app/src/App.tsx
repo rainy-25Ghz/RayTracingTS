@@ -5,7 +5,7 @@ import { Canva } from "./components/Canva/Canva";
 function App() {
   return (
     <div className="App">
-      <Canva imgWidth={256} imgHeight={256}></Canva>
+      <Canva imgWidth={400} imgHeight={(400 / 16) * 9}></Canva>
     </div>
   );
 }

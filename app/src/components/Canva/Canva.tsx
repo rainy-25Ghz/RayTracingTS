@@ -70,7 +70,7 @@ export const Canva = ({ imgHeight, imgWidth }: Props) => {
     //获取canva的上下文
     const canva = document.getElementById("canva") as HTMLCanvasElement;
     const canvaContext = canva.getContext("2d");
-    initCanvas(canvaContext, imgHeight, imgWidth);
+    initCanvas(canvaContext, imgWidth, imgHeight);
     //添加resize事件监听，防止canvas显示分辨率出问题
   }, [imgWidth, imgHeight]);
   return (
@@ -80,7 +80,7 @@ export const Canva = ({ imgHeight, imgWidth }: Props) => {
           id="canva"
           width={`${imgWidth}`}
           height={`${imgHeight}`}
-          style={getInlineWH(imgHeight, imgWidth)}
+          style={getInlineWH(imgWidth, imgHeight)}
         ></canvas>
       </div>
       <div className={styles.progress}>
