@@ -8,4 +8,7 @@ export class Ray{
         this.orig=origin||new Point3();
         this.dir=direction||new Vec3();
     }
+    at(t:number):Point3{
+        return this.orig.add(this.dir.multiply(t));
+    }
 }
