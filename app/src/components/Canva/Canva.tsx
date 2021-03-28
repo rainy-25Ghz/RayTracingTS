@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
 import styles from "./Canva.module.css";
+import { Camera } from "../../utility/camera";
+import { Ray } from "../../utility/ray";
+import { Vec3, Point3 } from "../../utility/vec3";
+import { Color } from "../../utility/color";
+function ray_color(r: Ray): Color {
+  let unit_direction: Vec3 = r.dir.unit_vector; //y∈[-1,1]
+  let t = 0.5 * (unit_direction.y + 1); //映射y到[0,1]
+  let white = new Color(1, 1, 1);
+  let blue = new Color(0.5, 0.7, 1.0);
+  return white.multiply(1 - t).add(blue.multiply(t)); //最底下y=-1,t=0时为白色，y=1,t=1时为蓝色
+}
 interface Props {
   imgWidth: number;
   imgHeight: number;
@@ -20,51 +31,59 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
   let t = 0;
   let y = h - 1,
     x = 0;
+  let cam = new Camera(new Vec3(0, 0, 0), 2, (2 * 16) / 9, 1);
+  let origin = cam.origin;
+  let lower_left_corner = cam.lower_left_corner;
+  let horizontal = cam.horizontal;
+  let vertical = cam.vertical;
   function _frame() {
+    console.log(y);
     for (x = 0; x < w; x++) {
-      data[t + 0] = x; // R value
-      data[t + 1] = y; // G value
-      data[t + 2] = 0.25 * 256; // B value
+      let u = x / (w - 1);
+      let v = y / (h - 1);
+      let dir = lower_left_corner
+        .add(horizontal.multiply(u))
+        .add(vertical.multiply(v))
+        .minus(origin);
+      const r = new Ray(origin, dir);
+      let color = ray_color(r).uint8_color;
+      data[t + 0] = color.r; // R value
+      data[t + 1] = color.g; // G value
+      data[t + 2] = color.b; // B value
       data[t + 3] = 255; // A value
       t += 4;
     }
     y--;
     for (x = 0; x < w; x++) {
-      data[t + 0] = x; // R value
-      data[t + 1] = y; // G value
-      data[t + 2] = 0.25 * 256; // B value
-      data[t + 3] = 255; // A value
+      let u = x / (w - 1);
+      let v = y / (h - 1);
+      let dir = lower_left_corner
+        .add(horizontal.multiply(u))
+        .add(vertical.multiply(v))
+        .minus(origin);
+      const r = new Ray(origin, dir);
+      let color = ray_color(r).uint8_color;
+      data[t + 0] = color.r; // R value
+      data[t + 1] = color.g; // G value
+      data[t + 2] = color.b; // B value
       t += 4;
     }
-    bar.style.width = `${((h - y) / h) * 100}%`;
-    ctx.putImageData(imgdata, 0, 0);
-    indicator.textContent = `${h - y} lines rendered`;
     if (y >= 0) {
       x = 0;
       y--;
+      bar.style.width = `${((h - y) / h) * 100}%`;
+      ctx.putImageData(imgdata, 0, 0);
+      indicator.textContent = `${h - y} lines rendered`;
       requestAnimationFrame(_frame);
     } else {
       return;
     }
   }
   requestAnimationFrame(_frame);
-  // for (let j = h - 1; j >= 0; j--) {
-  //   for (let i = 0; i < w; i++) {
-  //     data[t + 0] = i; // R value
-  //     data[t + 1] = j; // G value
-  //     data[t + 2] = 0.25 * 256; // B value
-  //     data[t + 3] = 255; // A value
-  //     t += 4;
-  //     //for (let k = 0; k < 200000; k++) {}
-  //   }
-  //   console.log(`${((h - j) / h) * 100}%`);
-  //   bar.style.width = `${((h - j) / h) * 100}%`;
-  //   ctx.putImageData(imgdata, 0, 0);
-  // }
-  ctx.putImageData(imgdata, 0, 0);
+  //ctx.putImageData(imgdata, 0, 0);
 }
 export const Canva = ({ imgHeight, imgWidth }: Props) => {
-  const [renderImageFlag, setrenderImageFlag] = useState(false);
+  //const [renderImageFlag, setrenderImageFlag] = useState(false);
   //const canvaContext = React.useContext(null);
   useEffect(() => {
     //获取canva的上下文
