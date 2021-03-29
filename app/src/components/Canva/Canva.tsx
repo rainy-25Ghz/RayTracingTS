@@ -37,45 +37,33 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
   let horizontal = cam.horizontal;
   let vertical = cam.vertical;
   function _frame() {
-    console.log(y);
-    for (x = 0; x < w; x++) {
-      let u = x / (w - 1);
-      let v = y / (h - 1);
-      let dir = lower_left_corner
-        .add(horizontal.multiply(u))
-        .add(vertical.multiply(v))
-        .minus(origin);
-      const r = new Ray(origin, dir);
-      let color = ray_color(r).uint8_color;
-      data[t + 0] = color.r; // R value
-      data[t + 1] = color.g; // G value
-      data[t + 2] = color.b; // B value
-      data[t + 3] = 255; // A value
-      t += 4;
-    }
-    y--;
-    for (x = 0; x < w; x++) {
-      let u = x / (w - 1);
-      let v = y / (h - 1);
-      let dir = lower_left_corner
-        .add(horizontal.multiply(u))
-        .add(vertical.multiply(v))
-        .minus(origin);
-      const r = new Ray(origin, dir);
-      let color = ray_color(r).uint8_color;
-      data[t + 0] = color.r; // R value
-      data[t + 1] = color.g; // G value
-      data[t + 2] = color.b; // B value
-      t += 4;
+    //console.log(y);
+    for (let temp = 0; temp < 3; temp++) {
+      for (x = 0; x < w; x++) {
+        let u = x / (w - 1);
+        let v = y / (h - 1);
+        let dir = lower_left_corner
+          .add(horizontal.multiply(u))
+          .add(vertical.multiply(v))
+          .minus(origin);
+        const r = new Ray(origin, dir);
+        let color = ray_color(r).uint8_color;
+        data[t + 0] = color.r; // R value
+        data[t + 1] = color.g; // G value
+        data[t + 2] = color.b; // B value
+        data[t + 3] = 255; // A value
+        t += 4;
+      }
+      y--;
     }
     if (y >= 0) {
       x = 0;
-      y--;
+      //y--;
       bar.style.width = `${((h - y) / h) * 100}%`;
-      ctx.putImageData(imgdata, 0, 0);
       indicator.textContent = `${h - y} lines rendered`;
       requestAnimationFrame(_frame);
     } else {
+      ctx.putImageData(imgdata, 0, 0);
       return;
     }
   }
