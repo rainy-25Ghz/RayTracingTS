@@ -38,7 +38,7 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
   let vertical = cam.vertical;
   function _frame() {
     //console.log(y);
-    for (let temp = 0; temp < 3; temp++) {
+    for (let temp = 0; temp < 3 && y >= 0; temp++) {
       for (x = 0; x < w; x++) {
         let u = x / (w - 1);
         let v = y / (h - 1);
@@ -60,9 +60,11 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
       x = 0;
       //y--;
       bar.style.width = `${((h - y) / h) * 100}%`;
-      indicator.textContent = `${h - y} lines rendered`;
+      indicator.textContent = `${h - 1 - y} lines rendered`;
       requestAnimationFrame(_frame);
     } else {
+      bar.style.width = `${((h - y) / h) * 100}%`;
+      indicator.textContent = `${h - 1 - y} lines rendered`;
       ctx.putImageData(imgdata, 0, 0);
       return;
     }
