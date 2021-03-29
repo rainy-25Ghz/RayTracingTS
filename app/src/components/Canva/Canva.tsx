@@ -5,11 +5,22 @@ import { Ray } from "../../utility/ray";
 import { Vec3, Point3 } from "../../utility/vec3";
 import { Color } from "../../utility/color";
 function ray_color(r: Ray): Color {
+  if (hit_sphere(new Point3(0, 0, -1), 0.5, r)) {
+    return new Color(1, 0, 0);
+  }
   let unit_direction: Vec3 = r.dir.unit_vector; //y∈[-1,1]
   let t = 0.5 * (unit_direction.y + 1); //映射y到[0,1]
   let white = new Color(1, 1, 1);
   let blue = new Color(0.5, 0.7, 1.0);
   return white.multiply(1 - t).add(blue.multiply(t)); //最底下y=-1,t=0时为白色，y=1,t=1时为蓝色
+}
+function hit_sphere(center: Point3, radius: number, r: Ray): boolean {
+  let direction = r.dir;
+  let origin = r.orig;
+  let a = direction.dot(direction);
+  let b = 2 * direction.dot(origin.minus(center));
+  let c = origin.minus(center).dot(origin.minus(center)) - radius ** 2;
+  return b ** 2 - 4 * a * c > 0;
 }
 interface Props {
   imgWidth: number;
