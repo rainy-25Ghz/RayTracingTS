@@ -5,22 +5,30 @@ import { Ray } from "../../utility/ray";
 import { Vec3, Point3 } from "../../utility/vec3";
 import { Color } from "../../utility/color";
 function ray_color(r: Ray): Color {
-  if (hit_sphere(new Point3(0, 0, -1), 0.5, r)) {
-    return new Color(1, 0, 0);
+  let c = new Point3(0, 0, -1); //球心
+  let _t = hit_sphere(c, 0.5, r);
+  if (_t > 0) {
+    //计算法向量映射到rgb空间
+    const rgb = r.at(_t).minus(c).unit_vector.add(new Vec3(1, 1, 1)).devide(2);
+    const color = new Color(rgb.x, rgb.y, rgb.z);
+    return color;
   }
+
   let unit_direction: Vec3 = r.dir.unit_vector; //y∈[-1,1]
   let t = 0.5 * (unit_direction.y + 1); //映射y到[0,1]
   let white = new Color(1, 1, 1);
   let blue = new Color(0.5, 0.7, 1.0);
   return white.multiply(1 - t).add(blue.multiply(t)); //最底下y=-1,t=0时为白色，y=1,t=1时为蓝色
 }
-function hit_sphere(center: Point3, radius: number, r: Ray): boolean {
+function hit_sphere(center: Point3, radius: number, r: Ray): number {
   let direction = r.dir;
   let origin = r.orig;
   let a = direction.dot(direction);
-  let b = 2 * direction.dot(origin.minus(center));
+  let b = 2 * direction.dot(origin.minus(center)); //b<0
   let c = origin.minus(center).dot(origin.minus(center)) - radius ** 2;
-  return b ** 2 - 4 * a * c > 0;
+  let discriminant = b ** 2 - 4 * a * c;
+  if (discriminant < 0) return -1;
+  else return (-b - Math.sqrt(discriminant)) / (2 * a); //b<0，取最近的点，因此-sqrt(Δ)
 }
 interface Props {
   imgWidth: number;
