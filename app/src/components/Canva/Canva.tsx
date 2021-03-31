@@ -43,21 +43,13 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
   let y = h - 1,
     x = 0;
   let cam = new Camera(new Vec3(0, 0, 0), 2, (2 * 16) / 9, 1);
-  let origin = cam.origin;
-  let lower_left_corner = cam.lower_left_corner;
-  let horizontal = cam.horizontal;
-  let vertical = cam.vertical;
   function _frame() {
     //console.log(y);
     for (let temp = 0; temp < 3 && y >= 0; temp++) {
       for (x = 0; x < w; x++) {
         let u = x / (w - 1);
         let v = y / (h - 1);
-        let dir = lower_left_corner
-          .add(horizontal.multiply(u))
-          .add(vertical.multiply(v))
-          .minus(origin);
-        const r = new Ray(origin, dir);
+        const r = cam.getRay(u, v);
         let color = ray_color(r).uint8_color;
         data[t + 0] = color.r; // R value
         data[t + 1] = color.g; // G value
