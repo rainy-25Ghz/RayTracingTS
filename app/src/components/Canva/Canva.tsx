@@ -4,32 +4,24 @@ import { Camera } from "../../utility/camera";
 import { Ray } from "../../utility/ray";
 import { Vec3, Point3 } from "../../utility/vec3";
 import { Color } from "../../utility/color";
-function ray_color(r: Ray): Color {
-  let c = new Point3(0, 0, -1); //球心
-  let _t = hit_sphere(c, 0.5, r);
-  if (_t > 0) {
-    //计算法向量映射到rgb空间
-    const rgb = r.at(_t).minus(c).unit_vector.add(new Vec3(1, 1, 1)).devide(2);
-    const color = new Color(rgb.x, rgb.y, rgb.z);
-    return color;
-  }
+import { HittableList } from "../../utility/hittableList";
+import { Sphere } from "../../utility/sphere";
+import { HitRecord } from "../../utility/hittable";
 
+function ray_color(r: Ray, world: HittableList): Color {
+  let rec = new HitRecord();
+  if (world.hit(r, 0, Infinity, rec)) {
+    const rgb = rec.normal.add(new Vec3(1, 1, 1)).multiply(0.5);
+    console.log(rgb);
+    return new Color(rgb.x, rgb.y, rgb.z);
+  }
   let unit_direction: Vec3 = r.dir.unit_vector; //y∈[-1,1]
   let t = 0.5 * (unit_direction.y + 1); //映射y到[0,1]
   let white = new Color(1, 1, 1);
   let blue = new Color(0.5, 0.7, 1.0);
   return white.multiply(1 - t).add(blue.multiply(t)); //最底下y=-1,t=0时为白色，y=1,t=1时为蓝色
 }
-function hit_sphere(center: Point3, radius: number, r: Ray): number {
-  let direction = r.dir;
-  let origin = r.orig;
-  let a = direction.dot(direction);
-  let b = 2 * direction.dot(origin.minus(center)); //b<0
-  let c = origin.minus(center).dot(origin.minus(center)) - radius ** 2;
-  let discriminant = b ** 2 - 4 * a * c;
-  if (discriminant < 0) return -1;
-  else return (-b - Math.sqrt(discriminant)) / (2 * a); //b<0，取最近的点，因此-sqrt(Δ)
-}
+
 interface Props {
   imgWidth: number;
   imgHeight: number;
@@ -51,6 +43,9 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
   let y = h - 1,
     x = 0;
   let cam = new Camera(new Vec3(0, 0, 0), 2, (2 * 16) / 9, 1);
+  let world = new HittableList();
+  world.add(new Sphere(new Point3(0, 0, -1), 0.5));
+  world.add(new Sphere(new Point3(0, -100.5, -1), 100));
   function _frame() {
     //console.log(y);
     for (let temp = 0; temp < 3 && y >= 0; temp++) {
@@ -58,7 +53,7 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
         let u = x / (w - 1);
         let v = y / (h - 1);
         const r = cam.getRay(u, v);
-        let color = ray_color(r).uint8_color;
+        let color = ray_color(r, world).uint8_color;
         data[t + 0] = color.r; // R value
         data[t + 1] = color.g; // G value
         data[t + 2] = color.b; // B value
