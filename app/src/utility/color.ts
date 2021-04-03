@@ -35,4 +35,7 @@ export class Color {
   devide(t: number): Color {
     return this.multiply(1 / t);
   }
+  sqrt(): Color {
+    return new Color(Math.sqrt(this.r), Math.sqrt(this.g), Math.sqrt(this.b));
+  }
 }
