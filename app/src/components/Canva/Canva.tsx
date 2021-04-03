@@ -8,20 +8,32 @@ import { HittableList } from "../../utility/hittableList";
 import { Sphere } from "../../utility/sphere";
 import { HitRecord } from "../../utility/hittable";
 import { random } from "../../utility/random";
-
-function ray_color(r: Ray, world: HittableList): Color {
+/**
+ * @return 光线的最终颜色
+ * @param r 光线
+ * @param world 所有物体
+ * @param depth 计算反射的递归深度限制
+ * */
+function ray_color(r: Ray, world: HittableList, depth: number): Color {
   let rec = new HitRecord();
+  if (depth <= 0) return new Color(0, 0, 0);
   if (world.hit(r, 0, Infinity, rec)) {
-    const rgb = rec.normal.add(new Vec3(1, 1, 1)).multiply(0.5);
-    console.log(rgb);
-    return new Color(rgb.x, rgb.y, rgb.z);
+    const target = rec.p.add(rec.normal).add(Vec3.randomVecInUnitSphere());
+    return ray_color(
+      new Ray(rec.p, target.minus(rec.p)),
+      world,
+      depth - 1
+    ).multiply(0.5);
   }
+  // const rgb = rec.normal.add(new Vec3(1, 1, 1)).multiply(0.5);
+  // return new Color(rgb.x, rgb.y, rgb.z);
   let unit_direction: Vec3 = r.dir.unit_vector; //y∈[-1,1]
   let t = 0.5 * (unit_direction.y + 1); //映射y到[0,1]
   let white = new Color(1, 1, 1);
   let blue = new Color(0.5, 0.7, 1.0);
   return white.multiply(1 - t).add(blue.multiply(t)); //最底下y=-1,t=0时为白色，y=1,t=1时为蓝色
 }
+
 function antialiasing(
   samplesPerPixel: number,
   world: HittableList,
@@ -36,9 +48,10 @@ function antialiasing(
     let u = (x + random(0, 1)) / (w - 1);
     let v = (y + random(0, 1)) / (h - 1);
     const r = cam.getRay(u, v);
-    color = color.add(ray_color(r, world));
+    color = color.add(ray_color(r, world, 50));
   }
-  return color.devide(samplesPerPixel).uint8_color;
+  let temp = color.devide(samplesPerPixel);
+  return temp.sqrt().uint8_color;
 }
 interface Props {
   imgWidth: number;
@@ -63,8 +76,8 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
 
   let cam = new Camera(new Vec3(0, 0, 0), 2, (2 * 16) / 9, 1);
   let world = new HittableList();
-  world.add(new Sphere(new Point3(0, 0, -1), 0.5));
-  world.add(new Sphere(new Point3(0, -100.5, -1), 100));
+  // world.add(new Sphere(new Point3(0, 0, -1), 0.5));
+  // world.add(new Sphere(new Point3(0, -100.5, -1), 100));
   function _frame() {
     //console.log(y);
     for (let temp = 0; temp < 3 && y >= 0; temp++) {
