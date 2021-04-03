@@ -7,6 +7,7 @@ import { Color } from "../../utility/color";
 import { HittableList } from "../../utility/hittableList";
 import { Sphere } from "../../utility/sphere";
 import { HitRecord } from "../../utility/hittable";
+import { random } from "../../utility/random";
 
 function ray_color(r: Ray, world: HittableList): Color {
   let rec = new HitRecord();
@@ -21,7 +22,24 @@ function ray_color(r: Ray, world: HittableList): Color {
   let blue = new Color(0.5, 0.7, 1.0);
   return white.multiply(1 - t).add(blue.multiply(t)); //最底下y=-1,t=0时为白色，y=1,t=1时为蓝色
 }
-
+function antialiasing(
+  samplesPerPixel: number,
+  world: HittableList,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  cam: Camera
+): Color {
+  let color = new Color(0, 0, 0);
+  for (let s = 0; s < samplesPerPixel; ++s) {
+    let u = (x + random(0, 1)) / (w - 1);
+    let v = (y + random(0, 1)) / (h - 1);
+    const r = cam.getRay(u, v);
+    color = color.add(ray_color(r, world));
+  }
+  return color.devide(samplesPerPixel).uint8_color;
+}
 interface Props {
   imgWidth: number;
   imgHeight: number;
@@ -42,6 +60,7 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
   let t = 0;
   let y = h - 1,
     x = 0;
+
   let cam = new Camera(new Vec3(0, 0, 0), 2, (2 * 16) / 9, 1);
   let world = new HittableList();
   world.add(new Sphere(new Point3(0, 0, -1), 0.5));
@@ -50,10 +69,7 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
     //console.log(y);
     for (let temp = 0; temp < 3 && y >= 0; temp++) {
       for (x = 0; x < w; x++) {
-        let u = x / (w - 1);
-        let v = y / (h - 1);
-        const r = cam.getRay(u, v);
-        let color = ray_color(r, world).uint8_color;
+        let color = antialiasing(100, world, x, y, w, h, cam);
         data[t + 0] = color.r; // R value
         data[t + 1] = color.g; // G value
         data[t + 2] = color.b; // B value
@@ -67,6 +83,7 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
       //y--;
       bar.style.width = `${((h - y) / h) * 100}%`;
       indicator.textContent = `${h - 1 - y} lines rendered`;
+      ctx.putImageData(imgdata, 0, 0);
       requestAnimationFrame(_frame);
     } else {
       bar.style.width = `${((h - y) / h) * 100}%`;
