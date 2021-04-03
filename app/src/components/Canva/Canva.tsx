@@ -76,8 +76,8 @@ function initCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
 
   let cam = new Camera(new Vec3(0, 0, 0), 2, (2 * 16) / 9, 1);
   let world = new HittableList();
-  // world.add(new Sphere(new Point3(0, 0, -1), 0.5));
-  // world.add(new Sphere(new Point3(0, -100.5, -1), 100));
+  world.add(new Sphere(new Point3(0, 0, -1), 0.5));
+  world.add(new Sphere(new Point3(0, -100.5, -1), 100));
   function _frame() {
     //console.log(y);
     for (let temp = 0; temp < 3 && y >= 0; temp++) {
