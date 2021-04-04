@@ -1,3 +1,5 @@
+import { random } from "./random";
+
 export class Vec3 {
   public e: number[];
   constructor();
@@ -59,6 +61,16 @@ export class Vec3 {
   //求单位向量
   get unit_vector(): Vec3 {
     return this.devide(this.length);
+  }
+  static random_vector(min: number, max: number): Vec3 {
+    return new Vec3(random(min, max), random(min, max), random(min, max));
+  }
+  static random_unit_sphere_vector(): Vec3 {
+    while (true) {
+      let temp = Vec3.random_vector(-1, 1);
+      if (temp.length_squared >= 1) continue;
+      return temp;
+    }
   }
 }
 export type Point3 = Vec3; //类型

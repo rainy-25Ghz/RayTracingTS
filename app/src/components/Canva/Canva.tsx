@@ -9,12 +9,16 @@ import { Sphere } from "../../utility/sphere";
 import { HitRecord } from "../../utility/hittable";
 import { random } from "../../utility/random";
 
-function ray_color(r: Ray, world: HittableList): Color {
+function ray_color(r: Ray, world: HittableList, depth: number): Color {
   let rec = new HitRecord();
+  if (depth <= 0) return new Color(0, 0, 0);
   if (world.hit(r, 0, Infinity, rec)) {
-    const rgb = rec.normal.add(new Vec3(1, 1, 1)).multiply(0.5);
-    console.log(rgb);
-    return new Color(rgb.x, rgb.y, rgb.z);
+    let s = rec.p.add(rec.normal).add(Vec3.random_unit_sphere_vector());
+    let p_s = s.minus(rec.p);
+    return ray_color(new Ray(rec.p, p_s), world, depth - 1);
+    // const rgb = rec.normal.add(new Vec3(1, 1, 1)).multiply(0.5);
+    // console.log(rgb);
+    //return new Color(rgb.x, rgb.y, rgb.z);
   }
   let unit_direction: Vec3 = r.dir.unit_vector; //y∈[-1,1]
   let t = 0.5 * (unit_direction.y + 1); //映射y到[0,1]
@@ -36,7 +40,7 @@ function antialiasing(
     let u = (x + random(0, 1)) / (w - 1);
     let v = (y + random(0, 1)) / (h - 1);
     const r = cam.getRay(u, v);
-    color = color.add(ray_color(r, world));
+    color = color.add(ray_color(r, world, 50));
   }
   return color.devide(samplesPerPixel).uint8_color;
 }
