@@ -15,8 +15,15 @@ export class Color {
   get b(): number {
     return this.e[2];
   }
+  private clamp(val: number, min: number, max: number): number {
+    if (val > max) return max;
+    if (val < min) return min;
+    return val;
+  }
   get uint8_color(): Color {
-    let e_uint8 = this.e.map((value) => Math.floor(256 * value));
+    let e_uint8 = this.e.map((value) =>
+      Math.floor(256 * this.clamp(value, 0, 0.999))
+    );
     return new Color(e_uint8[0], e_uint8[1], e_uint8[2]);
   }
   //加法
